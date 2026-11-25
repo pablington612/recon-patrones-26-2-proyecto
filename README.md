@@ -1,20 +1,32 @@
-# recon-patrones-26-2-proyecto
-Proyecto final Reconocimiento de Patrones 2026-2
+# Proyecto final Reconocimiento de Patrones 2026-2
 
 Predicción de `TVT` (profundidad vertical verdadera) en pozos horizontales, usando los datos de la competencia de Kaggle [rogii-wellbore-geology-prediction](https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction).
 
+<details>
+<summary><strong>Detalles del proyecto e instalación</strong></summary>
+
 ## Estructura
 
-- `libretas/`: libretas de Jupyter (`01-exploracion.ipynb`).
-- `datos/descargar.py`: script opcional para descargar los datos desde Kaggle.
-- `requirements.txt`: dependencias de Python.
-- `.env.example`: plantilla de credenciales de Kaggle.
+```
+proyecto/
+├── README.md            # el reporte del proyecto (ver abajo)
+├── requirements.txt       # dependencias
+├── datos/descargar.py   # descarga los datos con la API de Kaggle
+├── libretas/
+│   ├── 01-exploracion.ipynb
+│   ├── 02-validacion-y-linea-base.ipynb
+│   ├── 03-modelos.ipynb
+│   └── 04-envio-final.ipynb
+├── src/                 # funciones reutilizables (atributos, validación, modelos)
+├── experimentos.csv     # bitácora: un renglón por experimento
+└── leaderboard/         # capturas de la tabla y de envíos
+```
 
 ## Requisitos
 
-- Python 3.14 (el entorno del proyecto se creó con esta versión).
-- Git.
-- Una cuenta de Kaggle.
+- Python 3.14 (el entorno del proyecto se creó con esta versión)
+- Git
+- Una cuenta de Kaggle
 
 ## Instalación
 
@@ -53,14 +65,7 @@ Los datos se descargan con `kagglehub`, que necesita credenciales.
    cp .env.example .env      # en PowerShell: Copy-Item .env.example .env
    ```
 
-   ```
-   KAGGLE_USERNAME=tu_usuario
-   KAGGLE_API_TOKEN=tu_token
-   ```
-
-   `.env` está en `.gitignore`; no lo subas al repositorio.
-
-## Descarga de datos (opcional)
+## Descarga de datos (manual)
 
 La libreta descarga los datos automáticamente la primera vez. Para hacerlo antes:
 
@@ -72,7 +77,7 @@ Los archivos quedan en la caché de `kagglehub` (`~/.cache/kagglehub`), fuera de
 
 ## Ejecutar las libretas
 
-### Opción A: desde un IDE
+### Desde un IDE
 
 **VS Code**
 1. Instala las extensiones *Python* y *Jupyter*.
@@ -84,7 +89,7 @@ Los archivos quedan en la caché de `kagglehub` (`~/.cache/kagglehub`), fuera de
 1. Abre la carpeta y configura el intérprete: *Settings → Python Interpreter → Add → Existing* y elige `.venv`.
 2. Abre la libreta y ejecuta las celdas.
 
-### Opción B: desde el navegador
+### Desde el navegador
 
 Con el entorno activado, instala JupyterLab (no está en `requirements.txt`) y ábrelo desde la raíz del proyecto:
 
@@ -103,3 +108,4 @@ Se abrirá el navegador (o copia la URL con el token que aparece en la terminal)
 - **403 / Forbidden al descargar**: no aceptaste las reglas de la competencia, o el usuario/token en `.env` son incorrectos.
 - **`ModuleNotFoundError`**: el kernel no es el de `.venv`; selecciónalo de nuevo.
 - **Credenciales no encontradas**: verifica que `.env` exista en la raíz del proyecto y tenga ambos valores.
+</details>
