@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-
+from sklearn.model_selection import GroupKFold
 
 def cargar_pozos(carpeta):
     """Lee todos los pozos horizontales de una carpeta.
@@ -168,3 +168,48 @@ def b2_buzamiento(df, n=200):
     offset = cola["TVT_input"] + cola["Z"]
     a, b = np.polyfit(cola["MD"], offset, 1)
     return a * df.loc[m, "MD"].to_numpy() + b - df.loc[m, "Z"].to_numpy()
+
+def cv_por_pozo(pozos, ajustar, k=5):
+    """Validación cruzada agrupada por pozo.
+
+    Reparte los pozos en ``k`` folds con ``GroupKFold``, de modo que cada
+    pozo se valida una sola vez y nunca está en entrenamiento y validación
+    a la vez. En cada fold, ``ajustar`` recibe solo los pozos de
+    entrenamiento y regresa una función ``predecir`` que se evalúa con
+    ``rmse_global`` en los pozos de validación.
+
+    Parámetros
+    ----------
+    pozos : dict[str, pd.DataFrame]
+        Pozos de entrenamiento, como los regresa ``cargar_pozos``.
+    ajustar : callable
+        Recibe un dict de pozos y regresa una función ``predecir(df)``.
+        Para una línea base sin parámetros: ``lambda tr: b0_persistencia``.
+    k : int, opcional
+        Número de folds. Por defecto, 5.
+
+    Regresa
+    -------
+    float
+        RMSE global fuera de fold (errores de todos los pozos juntos).
+    pd.DataFrame
+        RMSE y número de renglones evaluados en cada fold.
+    """
+    nombres = np.array(sorted(pozos))
+    filas = []
+    for i, (idx_tr, idx_va) in enumerate(GroupKFold(n_splits=k).split(nombres, groups=nombres)):
+        entrenamiento = {n: pozos[n] for n in nombres[idx_tr]}
+        validacion = {n: pozos[n] for n in nombres[idx_va]}
+        rmse, _ = rmse_global(validacion, ajustar(entrenamiento))
+        n_eval = sum(zona_eval(df).sum() for df in validacion.values())
+        filas.append({"fold": i, "rmse": rmse, "n_eval": n_eval})
+    folds = pd.DataFrame(filas)
+    rmse = np.sqrt((folds["n_eval"] * folds["rmse"]**2).sum() / folds["n_eval"].sum())
+    return rmse, folds
+
+
+def ajustar_b2(entrenamiento, candidatos=(50, 100, 200, 400, 800)):
+    """Elige ``n`` de B2 con los pozos de entrenamiento y regresa el predictor."""
+    mejor = min(candidatos,
+                key=lambda n: rmse_global(entrenamiento, lambda df: b2_buzamiento(df, n))[0])
+    return lambda df: b2_buzamiento(df, mejor)
